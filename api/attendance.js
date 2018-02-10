@@ -34,7 +34,7 @@ router.post('/list-by-course', function(req, res, next) {
         }
         async.each(classes_id, function(class_id, callback) {
             connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,users.avatar, student_enroll_course.attendance_status
-            FROM users,student_enroll_course,students,class_has_course
+            FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND
                 student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND
                 class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
@@ -58,10 +58,10 @@ router.post('/list-by-course', function(req, res, next) {
                         attendance_list.push(attendance);
                         callback();
                     }else{
-                        connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason,
+                        connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason, 
                             (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
-                            FROM attendance, attendance_detail
-                            WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L
+                            FROM attendance, attendance_detail 
+                            WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L 
                             ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
                             if (error) {
                                 console.log(error.message + ' at get attendance_details');
@@ -140,8 +140,8 @@ router.post('/check-add-to-course', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`SELECT students.stud_id
-            FROM attendance,attendance_detail, students
+        connection.query(format(`SELECT students.stud_id 
+            FROM attendance,attendance_detail, students 
             WHERE attendance.id = attendance_detail.attendance_id AND attendance_detail.student_id = students.id AND attendance.course_id = %L AND students.stud_id = %L`, course_id, student_code), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get check add to course';
@@ -406,7 +406,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                         }else{
                                             callback();
                                         }
-
+                                        
                                     },
                                 ], function(error) {
                                     if (error) {
@@ -456,9 +456,9 @@ router.post('/update-list-by-course', function(req, res, next) {
                                 '"Giáo vụ"',
                                 student.email,
                                 'Register your account',
-                                'Hi,'+ student.name + '\r\n' +
+                                'Hi,'+ student.name + '\r\n' + 
                                 'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                link +
+                                link + 
                                 '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
                                 'If you need help, please contact the site administrator,\r\n' +
                                 'Admin User \r\n\r\n' +
@@ -495,7 +495,7 @@ router.post('/opening-by-teacher', function(req, res, next) {
          courses.code as course_code, classes.name as class_name,
          teacher_teach_course.* , class_has_course.total_stud, class_has_course.id as class_has_course_id
             FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
+            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND 
                 attendance.course_id = courses.id AND attendance.class_id = classes.id AND
                 class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
                 teacher_teach_course.teacher_id = %L`;
@@ -503,7 +503,7 @@ router.post('/opening-by-teacher', function(req, res, next) {
         if (isMobile) {
             query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
             FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
+            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND 
                 attendance.course_id = courses.id AND attendance.class_id = classes.id AND
                 class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
                 teacher_teach_course.teacher_id = %L`;
@@ -577,7 +577,7 @@ router.post('/create', function(req, res, next) {
             //Insert attendance detail
             function(callback) {
                 connection.query(format(`SELECT student_id,courses.name AS course_name,courses.code AS course_code FROM student_enroll_course,class_has_course, courses
-                    WHERE student_enroll_course.class_has_course_id = class_has_course.id
+                    WHERE student_enroll_course.class_has_course_id = class_has_course.id 
                     AND class_has_course.course_id = %L
                     AND class_has_course.class_id = %L
                     AND courses.id = class_has_course.course_id `, course_id, class_id), function(error, result, fields) {
@@ -737,12 +737,12 @@ router.post('/close', function(req, res, next) {
             },
             //get student who is absent
             function(callback) {
-                connection.query(format(`SELECT users.*, courses.code as course_code, courses.name as course_name, attendance.course_id, attendance.class_id
+                connection.query(format(`SELECT users.*, courses.code as course_code, courses.name as course_name, attendance.course_id, attendance.class_id 
                     FROM courses,attendance,attendance_detail, users , student_enroll_course, class_has_course
                     WHERE attendance_id = %L AND attendance_type = %L AND users.id = attendance_detail.student_id AND attendance.id = attendance_id AND
                     courses.id = attendance.course_id AND class_has_course.course_id = courses.id AND
                     student_enroll_course.student_id = users.id AND
-                    student_enroll_course.class_has_course_id = class_has_course.id AND
+                    student_enroll_course.class_has_course_id = class_has_course.id AND 
                     student_enroll_course.attendance_status = %L`, attendance_id, _global.attendance_type.absent, _global.attendance_status.normal), function(error, result, fields) {
                     if (error) {
                         callback(error + ' at get absent students');
@@ -841,8 +841,8 @@ router.post('/close', function(req, res, next) {
                 async.each(absent_students, function(student, callback) {
                     //count absences and total attendance
                     if(!student['skip_send_email']){
-                        connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail
-                                    WHERE id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L
+                        connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
+                                    WHERE id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
                                     GROUP BY attendance_type`, student.id, student.course_id, student.class_id), function(error, result, fields) {
                             if (error) {
                                 console.log(error.message + ' at insert attendance_details');
@@ -902,7 +902,7 @@ router.post('/check-attendance-list', function(req, res, next) {
             return console.log("Can't connect to database");
         }
         connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar, student_enroll_course.attendance_status
-            FROM users,student_enroll_course,students,class_has_course
+            FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get student_list by course';
@@ -926,7 +926,7 @@ router.post('/check-attendance-list', function(req, res, next) {
                     callback();
                 } else {
                     connection.query(format(`SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
-                        FROM attendance, attendance_detail
+                        FROM attendance, attendance_detail 
                         WHERE attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L
                         ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
                         if (error) {
@@ -994,7 +994,7 @@ router.post('/check-attendance', function(req, res, next) {
         }
 
         var class_has_course_id = 0;
-        connection.query(format(`SELECT class_has_course.id
+        connection.query(format(`SELECT class_has_course.id 
             FROM class_has_course, attendance
             WHERE attendance.class_id = class_has_course.class_id
             AND attendance.course_id = class_has_course.course_id
@@ -1009,8 +1009,8 @@ router.post('/check-attendance', function(req, res, next) {
 
             class_has_course_id = result.rows[0].id;
 
-            connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.*, attendance_detail.attendance_type as status, users.avatar as avatar
-            FROM users, attendance_detail, students, student_enroll_course
+            connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.*, attendance_detail.attendance_type as status, users.avatar as avatar 
+            FROM users, attendance_detail, students, student_enroll_course 
             WHERE users.id = students.id
             AND attendance_detail.student_id = students.id
             AND student_enroll_course.class_has_course_id = %L
@@ -1162,8 +1162,8 @@ router.post('/list-by-student/', function(req, res, next) {
             return console.log("Can't connect to database");
         }
         connection.query(format(`SELECT courses.code, courses.name , courses.id , class_has_course.attendance_count, class_has_course.class_id , student_enroll_course.attendance_status
-                FROM users,student_enroll_course,class_has_course ,courses
-                WHERE users.id = %L AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id
+                FROM users,student_enroll_course,class_has_course ,courses 
+                WHERE users.id = %L AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
                     AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)`, student_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get enrolling courses by student';
@@ -1198,10 +1198,10 @@ router.post('/list-by-student/', function(req, res, next) {
                             if(result.rowCount > 0){
                                 attendance['current_attendance_status'] = result.rows[0].closed;
                             }
-                            connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason,
+                            connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason, 
                                     (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
-                                FROM attendance, attendance_detail
-                                WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L
+                                FROM attendance, attendance_detail 
+                                WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L 
                                 ORDER BY attendance_id`, course.id, course.class_id, student_id), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at get attendance_details by student');
@@ -1259,11 +1259,11 @@ router.post('/opening-for-student/', function(req, res, next) {
         }
         connection.query(format(`SELECT courses.code, courses.name , courses.id , class_has_course.class_id, student_enroll_course.attendance_status as exemption , attendance_detail.attendance_type
             FROM student_enroll_course,class_has_course ,courses , attendance, attendance_detail
-            WHERE student_enroll_course.class_has_course_id = class_has_course.id
+            WHERE student_enroll_course.class_has_course_id = class_has_course.id 
             AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)
-            AND attendance.closed = FALSE
-            AND attendance.id = attendance_detail.attendance_id
-            AND attendance.course_id = class_has_course.course_id
+            AND attendance.closed = FALSE 
+            AND attendance.id = attendance_detail.attendance_id 
+            AND attendance.course_id = class_has_course.course_id 
             AND attendance.class_id = class_has_course.class_id
             AND attendance_detail.student_id = student_enroll_course.student_id
             AND student_enroll_course.student_id = %L`, student_id), function(error, result, fields) {
@@ -1306,7 +1306,7 @@ router.post('/request_to_be_check_attendance/', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`SELECT users.id , courses.code as course_code, courses.name as course_name
+        connection.query(format(`SELECT users.id , courses.code as course_code, courses.name as course_name 
             FROM users , teacher_teach_course , courses
             WHERE users.id = teacher_teach_course.teacher_id
             AND courses.id = teacher_teach_course.course_id
@@ -1421,54 +1421,24 @@ router.post('/check-delegate-code', function(req, res, next) {
     var code = req.body.code;
     for (var i = 0; i < delegate_list.length; i++) {
         if (delegate_list[i]['code'] == code) {
-            if (delegate_list[i]['in_use'] == true) {
-                _global.sendError(res, null, 'This code is being used!');
-                console.log('This code is being used!');
-                return;
-            } else {
-                delegate_list[i]['in_use'] = true;
-                res.send({
-                    result: 'success',
-                    delegate_detail: delegate_list[i]
-                });
-                return;
-              }
+            // if (delegate_list[i]['in_use'] == true) {
+            //     _global.sendError(res, null, 'This code is being used!');
+            //     console.log('This code is being used!');
+            //     return;
+            // } else {
+            //     delegate_list[i]['in_use'] = true;
+            //     res.send({
+            //         result: 'success',
+            //         delegate_detail: delegate_list[i]
+            //     });
+            //     return;
+            // }
             res.send({
                 result: 'success',
                 delegate_detail: delegate_list[i]
             });
             return;
         }
-        //fixed
-    /*  fs.readFile('./api/data/quiz/' + code + '.json', 'utf8', function (error, data) {
-
-        pool_postgres.connect(function(error, connection, done) {
-            if(connection == undefined){
-                _global.sendError(res, null, "Can't connect to database");
-                done();
-                return console.log("Can't connect to database");
-            }
-            connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
-                if (error) {
-                    _global.sendError(res, null, error.message);
-                    done();
-                    return console.log(error);
-                } else {
-                    if (result.rowCount == 0) {
-                        _global.sendError(res, null, 'You are not in this course');
-                        done();
-                        return console.log('You are not in this course');
-                    } else{
-                            res.send({
-                                result: 'success'
-                            });
-                            done();
-                      }
-
-                }
-            });
-        });
-      });*/
     }
     _global.sendError(res, null, 'Invalid code! It might have been expired or the attendance is already closed');
     console.log('Invalid code! It might have been expired or the attendance is already closed');
@@ -1492,7 +1462,7 @@ router.post('/opening-for-student', function(req, res, next) {
         query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
             FROM qldd.attendance, class_has_course, student_enroll_course as sec
             WHERE attendance.closed = FALSE AND
-            class_has_course.class_id = attendance.class_id
+            class_has_course.class_id = attendance.class_id 
             AND class_has_course.course_id = attendance.course_id
             AND sec.class_has_course_id = class_has_course.id
             AND sec.student_id = %L`;
