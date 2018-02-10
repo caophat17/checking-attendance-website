@@ -7,6 +7,7 @@ var pool = mysql.createPool(_global.db);
 var pg = require('pg');
 var format = require('pg-format');
 var nodemailer = require('nodemailer');
+var count = require('word-count')
 const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
@@ -119,6 +120,14 @@ router.post('/send', function(req, res, next) {
         _global.sendError(res, null, "content is required");
         return;
     }
+	if(count(req.body.content) < 15){
+		_global.sendError(res, null, "input at least 15 word");
+        return;
+	}
+	if(count(req.body.title) < 5){
+		_global.sendError(res, null, "input at least 5 word");
+        return;
+	}
     var from_id = (req.body.isAnonymous ? null : req.decoded.id);
     var to_id = (req.body.to_id != 0 ? req.body.to_id : null);
     var feedback = [[
