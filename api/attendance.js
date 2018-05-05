@@ -491,11 +491,6 @@ router.post('/opening-by-teacher', function(req, res, next) {
   var time = moment();
   var solan = 0;
   var time_format = time.format('YYYY-MM-DD'); // current day
-  var tablesolan = [[
-    teacher_id;
-    time;
-    solan;
-  ]];
   // -----------------------------------------------------------------------------------------
     if (req.body.teacher_id == null || req.body.teacher_id == 0) {
         _global.sendError(res, null, "teacher_id is required");
