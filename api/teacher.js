@@ -24,7 +24,7 @@ router.post('/list', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(`SELECT teachers.id,first_name,last_name,phone,email,current_courses 
+        connection.query(`SELECT teachers.id,first_name,last_name,phone,email,current_courses
         FROM teachers,users
         WHERE teachers.id = users.id`, function(error, result, fields) {
             if (error) {
@@ -84,10 +84,10 @@ router.get('/detail/:id', function(req, res, next) {
                 return console.log(error);
             }
             var teacher = result.rows[0];
-            connection.query(format(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, 
+            connection.query(format(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code,
                                     courses.name AS course_name,class_has_course.attendance_count,classes.name AS class_name,
-                                    semesters.name AS semester_name 
-                FROM teacher_teach_course , courses, classes , semesters , class_has_course 
+                                    semesters.name AS semester_name
+                FROM teacher_teach_course , courses, classes , semesters , class_has_course
                 WHERE teacher_teach_course.course_id = courses.id AND courses.id = class_has_course.course_id AND
                  teacher_teach_course.teacher_id = %L AND classes.id = class_has_course.class_id AND
                   semesters.id = courses.semester_id `, id), function(error, result, fields) {
@@ -187,9 +187,9 @@ router.post('/add', function(req, res, next) {
                             '"Giáo vụ"',
                             new_email,
                             'Register your account',
-                            'Hi,'+ new_first_name + '\r\n' + 
+                            'Hi,'+ new_first_name + '\r\n' +
                             'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                            link + 
+                            link +
                             '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
                             'If you need help, please contact the site administrator,\r\n' +
                             'Admin User \r\n\r\n' +
@@ -384,9 +384,9 @@ router.post('/import', function(req, res, next) {
                         '"Giáo vụ"',
                         teacher.email,
                         'Register your account',
-                        'Hi,'+ teacher.name + '\r\n' + 
+                        'Hi,'+ teacher.name + '\r\n' +
                             'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                            link + 
+                            link +
                             '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
                             'If you need help, please contact the site administrator,\r\n' +
                             'Admin User \r\n\r\n' +

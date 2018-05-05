@@ -13,6 +13,8 @@ var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var delegate_list = [];
+var dayofweek = require('day-of-week').get;
+var moment = require('moment');
 
 router.post('/list-by-course', function(req, res, next) {
     if (req.body.course_id == null) {
@@ -484,30 +486,50 @@ router.post('/update-list-by-course', function(req, res, next) {
 });
 
 router.post('/opening-by-teacher', function(req, res, next) {
+  var teacher_id = req.body.teacher_id;
+  var isMobile = req.body.isMobile == null ? 0 : 1;
+  var time = moment();
+  var solan = 0;
+  var time_format = time.format('YYYY-MM-DD'); // current day
+  var tablesolan = [[
+    teacher_id;
+    time;
+    solan;
+  ]];
+  // -----------------------------------------------------------------------------------------
     if (req.body.teacher_id == null || req.body.teacher_id == 0) {
         _global.sendError(res, null, "teacher_id is required");
         return console.log("teacher_id is required");
     }
-    var teacher_id = req.body.teacher_id;
-    var isMobile = req.body.isMobile == null ? 0 : 1;
+  if( dayofweek(time) == 0){
+      _global.sendError(res, null, "CN khong co lop");
+     return console.log("CN khong co lop");
+       }
+    if(solan >= 2){
+      _global.sendError(res, null, "so lan mo vuot qua gioi han");
+      return console.log("so lan mo vuot qua gioi han");
+   }
     pool_postgres.connect(function(error, connection, done) {
-        var query = `SELECT attendance.*, courses.name as course_name,
-         courses.code as course_code, classes.name as class_name,
-         teacher_teach_course.* , class_has_course.total_stud, class_has_course.id as class_has_course_id
-            FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
-                attendance.course_id = courses.id AND attendance.class_id = classes.id AND
-                class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
-                teacher_teach_course.teacher_id = %L`;
+      if( 1 <= dayofweek(time) <= 6){
+        for(var solan =0; solan <=2; solan++){
+        if(solan < 2){
+          var query = `SELECT attendance.*, courses.name as course_name,
+           courses.code as course_code, classes.name as class_name,
+           teacher_teach_course.* , class_has_course.total_stud, class_has_course.id as class_has_course_id
+              FROM attendance, teacher_teach_course, courses, classes, class_has_course
+              WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
+                  attendance.course_id = courses.id AND attendance.class_id = classes.id AND
+                  class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
+                  teacher_teach_course.teacher_id = %L`;
 
-        if (isMobile) {
-            query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
-            FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
-                attendance.course_id = courses.id AND attendance.class_id = classes.id AND
-                class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
-                teacher_teach_course.teacher_id = %L`;
-        }
+          if (isMobile) {
+              query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
+              FROM attendance, teacher_teach_course, courses, classes, class_has_course
+              WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND
+                  attendance.course_id = courses.id AND attendance.class_id = classes.id AND
+                  class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
+                  teacher_teach_course.teacher_id = %L`;
+          }
         if(connection == undefined){
             _global.sendError(res, null, "Can't connect to database");
             done();
@@ -527,6 +549,10 @@ router.post('/opening-by-teacher', function(req, res, next) {
                 done();
             }
         });
+        return console.log("mo diem danh thanh cong");
+    }
+  }
+  }
     });
 });
 
@@ -1421,54 +1447,24 @@ router.post('/check-delegate-code', function(req, res, next) {
     var code = req.body.code;
     for (var i = 0; i < delegate_list.length; i++) {
         if (delegate_list[i]['code'] == code) {
-            if (delegate_list[i]['in_use'] == true) {
-                _global.sendError(res, null, 'This code is being used!');
-                console.log('This code is being used!');
-                return;
-            } else {
-                delegate_list[i]['in_use'] = true;
-                res.send({
-                    result: 'success',
-                    delegate_detail: delegate_list[i]
-                });
-                return;
-              }
+            // if (delegate_list[i]['in_use'] == true) {
+            //     _global.sendError(res, null, 'This code is being used!');
+            //     console.log('This code is being used!');
+            //     return;
+            // } else {
+            //     delegate_list[i]['in_use'] = true;
+            //     res.send({
+            //         result: 'success',
+            //         delegate_detail: delegate_list[i]
+            //     });
+            //     return;
+            // }
             res.send({
                 result: 'success',
                 delegate_detail: delegate_list[i]
             });
             return;
         }
-        //fixed
-    /*  fs.readFile('./api/data/quiz/' + code + '.json', 'utf8', function (error, data) {
-
-        pool_postgres.connect(function(error, connection, done) {
-            if(connection == undefined){
-                _global.sendError(res, null, "Can't connect to database");
-                done();
-                return console.log("Can't connect to database");
-            }
-            connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
-                if (error) {
-                    _global.sendError(res, null, error.message);
-                    done();
-                    return console.log(error);
-                } else {
-                    if (result.rowCount == 0) {
-                        _global.sendError(res, null, 'You are not in this course');
-                        done();
-                        return console.log('You are not in this course');
-                    } else{
-                            res.send({
-                                result: 'success'
-                            });
-                            done();
-                      }
-
-                }
-            });
-        });
-      });*/
     }
     _global.sendError(res, null, 'Invalid code! It might have been expired or the attendance is already closed');
     console.log('Invalid code! It might have been expired or the attendance is already closed');

@@ -9,6 +9,7 @@ var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var fs = require('fs');
+
 router.post('/by-student', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == 0) {
         _global.sendError(res, null, "student Id is required");
@@ -92,7 +93,7 @@ router.put('/change-status', function(req, res, next) {
             },
             //get absence requests info
             function(callback) {
-                connection.query(format(`SELECT * FROM absence_requests, users
+                connection.query(format(`SELECT * FROM absence_requests, users 
                     WHERE absence_requests.student_id = users.id AND absence_requests.id = %L LIMIT 1`, id), function(error, result, fields) {
                     if (error) {
                         callback(error);
@@ -136,7 +137,7 @@ router.put('/change-status', function(req, res, next) {
             function(callback) {
                 var start_date = absence_request_info.start_date;
                 var end_date = absence_request_info.end_date;
-                connection.query(format(`SELECT attendance_id FROM attendance, attendance_detail
+                connection.query(format(`SELECT attendance_id FROM attendance, attendance_detail 
                     WHERE attendance.id = attendance_detail.attendance_id AND
                     attendance_detail.student_id = %L AND
                     attendance.closed = TRUE AND
@@ -210,8 +211,8 @@ router.post('/list', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`SELECT absence_requests.*,students.stud_id as code, CONCAT(users.first_name,' ', users.last_name) as name
-            FROM absence_requests,students,users
+        connection.query(format(`SELECT absence_requests.*,students.stud_id as code, CONCAT(users.first_name,' ', users.last_name) as name 
+            FROM absence_requests,students,users 
             WHERE users.id = students.id AND absence_requests.student_id = students.id AND absence_requests.status = %L`, status), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
@@ -261,10 +262,6 @@ router.post('/create', function(req, res, next) {
     if (req.body.end_date == undefined || req.body.end_date == 0) {
         _global.sendError(res, null, "End date is required");
         return;
-    }
-    if(count(req.body.reason) < 15){
-      _global.sendError(res, null, "at least 15 words");
-      return;
     }
     var reason = req.body.reason;
     var start_date = req.body.start_date;

@@ -2,12 +2,13 @@ var express = require('express');
 var router = express.Router();
 var _global = require('../global.js');
 var mysql = require('mysql');
-var async = require("async");
+var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
+var async = require("async");
+var jwt = require('jsonwebtoken');
+var nodemailer = require('nodemailer');
 var pg = require('pg');
 var format = require('pg-format');
-var nodemailer = require('nodemailer');
-var count = require('word-count')
 const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
@@ -23,9 +24,9 @@ router.post('/list', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        var query = format(`SELECT id, title, content, replied, feedbacks.read, created_at , 
-            (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
-            (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
+        var query = format(`SELECT id, title, content, replied, feedbacks.read, created_at ,
+            (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from,
+            (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to
             FROM feedbacks WHERE to_id IS NULL AND replied = %L`, status);
         if(role_id != 0){
             query += ' AND type = ' + role_id;
@@ -120,15 +121,6 @@ router.post('/send', function(req, res, next) {
         _global.sendError(res, null, "content is required");
         return;
     }
-		if(count(req.body.title) < 5){
-		_global.sendError(res, null, "input at least 5 words in title");
-        return;
-	}
-	if(count(req.body.content) < 15){
-		_global.sendError(res, null, "input at least 15 words in content");
-        return;
-	}
-
     var from_id = (req.body.isAnonymous ? null : req.decoded.id);
     var to_id = (req.body.to_id != 0 ? req.body.to_id : null);
     var feedback = [[
@@ -212,7 +204,7 @@ router.post('/history', function(req, res, next) {
             query = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
         WHERE from_id = %L AND replied = %L `;
         }else{
-            query = `SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as from FROM feedbacks 
+            query = `SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as from FROM feedbacks
         WHERE to_id = %L AND replied = %L `;
         }
         if(category != 0){
@@ -265,14 +257,14 @@ router.post('/send-reply', function(req, res, next) {
         _global.sendError(res, null, "reply_content is required");
         return;
     }
-    
+
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "feedback_id is required");
         return;
     }
 
     var reply_content = req.body.content;
-    var feedback_id = req.body.id;    
+    var feedback_id = req.body.id;
 
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
@@ -281,9 +273,9 @@ router.post('/send-reply', function(req, res, next) {
                 return console.log(error);
         }
 
-        var query = `SELECT id, title, content, from_id, 
-            (SELECT users.email FROM users WHERE users.id = feedbacks.from_id) as _from,  
-            (SELECT users.last_name FROM users WHERE users.id = feedbacks.from_id) as _last_name  
+        var query = `SELECT id, title, content, from_id,
+            (SELECT users.email FROM users WHERE users.id = feedbacks.from_id) as _from,
+            (SELECT users.last_name FROM users WHERE users.id = feedbacks.from_id) as _last_name
             FROM feedbacks
             WHERE id = %L`;
         connection.query(format(query, feedback_id),function(error, result, fields) {
@@ -303,7 +295,7 @@ router.post('/send-reply', function(req, res, next) {
                     done();
                     return console.log(error);
                 }
-                var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                var token = jwt.sign({ email: email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
                 var link = _global.host + '/register;token=' + token;
                 _global.sendMail(
                     '"Giáo vụ"',
@@ -329,7 +321,7 @@ router.post('/send-reply', function(req, res, next) {
                             done();
                         }
                     });
-                
+
             });
         });
     });
