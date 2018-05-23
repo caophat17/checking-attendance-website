@@ -12,10 +12,26 @@ export class FeedbackHistoryComponent implements OnInit {
 
     }
     public getFeedbacks(){
-        this.feebackService.getFeedbackHistory(this.from_to, this.search_text, this.selected_category, this.selected_status,this.pageNumber, this.itemsPerPage).subscribe(result=>{
-            this.feedbacks = result.feedbacks;
-            this.totalItems = result.total_items;
-        },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
+        if (this.authService.current_user.role_id == this.appService.userType.student){
+            this.feebackService.getFeedbackHistory(this.from_to, this.search_text, this.selected_category, null, this.pageNumber, this.itemsPerPage).subscribe(result=>{
+                this.feedbacks = result.feedbacks;
+                this.totalItems = result.total_items;
+            },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
+        } else {
+            if (this.from_to == 0){
+                this.selected_status = null;
+            } else {
+                if (this.selected_status == 1){
+                    this.selected_status = 1;
+                } else {
+                    this.selected_status = 0;
+                }
+            }
+            this.feebackService.getFeedbackHistory(this.from_to, this.search_text, this.selected_category, this.selected_status,this.pageNumber, this.itemsPerPage).subscribe(result=>{
+                this.feedbacks = result.feedbacks;
+                this.totalItems = result.total_items;
+            },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
+        }
     }
     public ngOnInit() {
         this.getFeedbacks();
@@ -38,6 +54,7 @@ export class FeedbackHistoryComponent implements OnInit {
     public selected_feedback;
     public feedback_title = '';
     public feedback_content = '';
+    public feedback_reply = '';
     public feedback_from = '';
     public reply_content = '';
     public feedback_id: number;
@@ -57,6 +74,8 @@ export class FeedbackHistoryComponent implements OnInit {
         this.feedback_id = this.feedbacks[index].id;
         this.feedback_from = this.feedbacks[index]._from;
         this.feedback_title = this.feedbacks[index].title;
+        this.feedback_reply = this.feedbacks[index].feedback_reply;
+        console.log(this.feedback_reply);
         for(var i = 0 ; i < this.appService.feedback_categories.length; i++){
             if(this.appService.feedback_categories[i].id == this.feedbacks[index].category){
                 this.feedback_category = this.appService.feedback_categories[i].title;
@@ -64,10 +83,12 @@ export class FeedbackHistoryComponent implements OnInit {
             }
         }
         jQuery('#feedbackDetailModal').modal('show');
-        this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
-            this.getFeedbacks();
-            jQuery('#feedbackDetailModal').modal('show');
-        },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
+        if (this.from_to == 1){
+            this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
+                this.getFeedbacks();
+                jQuery('#feedbackDetailModal').modal('show');
+            },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
+        }
     }
     public onSearchChange(){
         if(this.search_text.length > 3 || this.search_text.length == 0){
