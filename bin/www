@@ -115,6 +115,35 @@ io.sockets.on('connection', function(socket){
     io.emit('notificationPushed', notificationPushed);
   });
 
+  // Socket event for start quiz for teacher in mobile through web
+  socket.on('portalStartedQuiz', function (quizStartMobile) {
+    console.log('portalStartedQuiz', quizStartMobile);
+    io.emit('portalStartedQuiz', quizStartMobile);
+  });
+
+  // Socket event for start quiz for teacher in web through mobile
+  socket.on('mobileStartedQuiz', function (quizStartMobileFromWeb) {
+    console.log('mobileStartedQuiz', quizStartMobileFromWeb);
+    io.emit('mobileStartedQuiz', quizStartMobileFromWeb);
+  });
+
+  // Socket event for ending quiz for teacher in mobile
+  socket.on('mobileEndedQuiz', function (quizEndedMobile) {
+    console.log('mobileEndedQuiz', quizEndedMobile);
+    io.emit('mobileEndedQuiz', quizEndedMobile);
+  });
+
+  // Socket event for completing Quiz for mobile
+  socket.on('quizCompletedMobile', function (quizCompletedMobile) {
+    console.log('quizCompletedMobile', quizCompletedMobile);
+    io.emit('quizCompletedMobile', quizCompletedMobile);
+  });
+
+  // Socket event for publish quiz on web
+  socket.on('webPublishedQuiz', function (webPublishedQuiz) {
+    console.log('webPublishedQuiz', webPublishedQuiz);
+    io.emit('webPublishedQuiz', webPublishedQuiz);
+  });
 
   socket.on('disconnect', function() {
       console.log('Socket disconnect!');
@@ -124,7 +153,7 @@ io.sockets.on('connection', function(socket){
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+server.listen(port, "0.0.0.0");
 server.on('error', onError);
 server.on('listening', onListening);
 
