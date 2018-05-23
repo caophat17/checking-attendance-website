@@ -5,10 +5,11 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var async = require("async");
-
+var requestAPI = require("./util/requestAPI");
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+
 
 //[name]
 var insert_roles = [
@@ -26,9 +27,9 @@ var insert_semesters = [
 ];
 //[name,code]
 var insert_programs = [
-    ['Chất lượng cao', 'CLC'],
-    ['Việt Pháp', 'VP'],
-    ['Chương trình tiên tiến', 'CTT'],
+    ['Chất lượng cao', 'CLC', 'student.hcmus.edu.vn'],
+    ['Việt Pháp', 'VP', 'student.hcmus.edu.vn'],
+    ['Chương trình tiên tiến', 'CTT', 'student.hcmus.edu.vn'],
 ];
 //[code,email,program_id]
 var insert_classes = [
@@ -1193,7 +1194,16 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO programs (name,code) VALUES %L', insert_programs), function(error, results, fields) {
+                connection.query(format('INSERT INTO programs (name,code, email_domain) VALUES %L', insert_programs), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO students (id,stud_id,class_id) VALUES %L', insert_students), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -1239,15 +1249,6 @@ var seeding_postgres = function(res) {
             },
             function(callback) {
                 connection.query(format('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES %L', insert_teacher_teach_course), function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query(format('INSERT INTO students (id,stud_id,class_id) VALUES %L', insert_students), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -1414,10 +1415,12 @@ var seeding_admin = function(res) {
         });
     });
 }
+
 router.get('/', function(req, res, next) {
     //seeding_mysql(res);
     seeding_postgres(res);
 });
+
 router.get('/admin', function(req, res, next) {
     //seeding_mysql(res);
     seeding_admin(res);
