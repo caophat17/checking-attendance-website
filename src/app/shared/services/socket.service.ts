@@ -16,8 +16,12 @@ export class SocketService {
   public invokeQuittedQuiz = new Subject();
   public invokeAnsweredQuiz = new Subject();
   public invokeQuizEnded = new Subject();
-
   public invokeNotificationPushed = new Subject();
+  public invokePortalStartedQuiz = new Subject();
+  public invokeMobileStartedQuiz = new Subject();
+  public invokeMobileEndedQuiz = new Subject();
+  public invokeQuizCompletedMobile = new Subject();
+  public invokeWebPublishedQuiz = new Subject();
   // Constructor with an injection of ToastService
   public constructor() {
     this.socket = io();
@@ -157,4 +161,48 @@ export class SocketService {
     });
   }
   public stopEventOnNotificationPushed(){this.socket.off('notificationPushed');}
+
+  //Start Quiz on mobile from web
+  public emitEventOnPortalStartedQuiz(quizCode){
+    this.socket.emit('portalStartedQuiz', quizCode);
+  };
+  public consumeEventOnPortalStartedQuiz(){
+    var self = this;
+    this.socket.on('portalStartedQuiz', function(event:any){
+      self.invokePortalStartedQuiz.next(event);
+    });
+  };
+  public stopEventOnPortalStartedQuiz(){
+    this.socket.off('portalStartedQuiz');
+  }
+
+  //Start Quiz on web from mobile
+  public emitEventOnMobileStartedQuiz(quizCode){
+    this.socket.emit('mobileStartedQuiz', quizCode);
+  };
+  public consumeEventOnMobileStartedQuiz(){
+    var self = this;
+    this.socket.on('mobileStartedQuiz', function(event:any){
+      self.invokeMobileStartedQuiz.next(event);
+    });
+  };
+  public stopEventOnMobileStartedQuiz(){
+    this.socket.off('mobileStartedQuiz');
+  }
+
+
+  // Emit Quiz object to Mobile From Web
+  public emitEventOnQuizCompletedMobile(quizCode){
+    this.socket.emit('quizCompletedMobile', quizCode);
+    console.log('quizCompletedMobile', quizCode);
+  };
+  public consumeEventOnQuizCompletedMobile(){
+    var self = this;
+    this.socket.on('quizCompletedMobile', function(event:any){
+      self.invokeQuizCompletedMobile.next(event);
+    });
+  };
+  public stopEventOnQuizCompletedMobile(){
+    this.socket.off('quizCompletedMobile');
+  }
 }
