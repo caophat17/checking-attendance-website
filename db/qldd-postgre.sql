@@ -42,6 +42,8 @@ CREATE TABLE attendance (
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   closed boolean DEFAULT FALSE,
+  start_week_date bigint,
+  end_week_date bigint,
   PRIMARY KEY (id)
 );
 
@@ -107,6 +109,7 @@ CREATE TABLE feedbacks (
   replied boolean DEFAULT FALSE,
   replied_at timestamp with time zone DEFAULT NULL,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  feedback_reply text,
   PRIMARY KEY (id)
 );
 
@@ -135,6 +138,7 @@ CREATE TABLE programs (
   id serial NOT NULL,
   name varchar(50) NOT NULL DEFAULT 'missing program name',
   code varchar(10) DEFAULT '',
+  email_domain character varying(50),
   PRIMARY KEY (id)
 );
 
@@ -172,7 +176,20 @@ CREATE TABLE students (
   status smallint DEFAULT '0',
   current_courses smallint DEFAULT '0',
   note varchar(50) DEFAULT NULL,
+  person_id VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (id)
+);
+
+-- ----------------------------
+-- Table structure for student has faces
+-- ----------------------------
+DROP TABLE IF EXISTS student_has_faces;
+
+CREATE TABLE student_has_faces
+(
+    person_id character varying(255),
+    face_id character varying(255),
+    face_image character varying(255)
 );
 
 -- ----------------------------
@@ -296,9 +313,22 @@ CREATE TABLE quiz_questions (
 );
 
 -- ----------------------------
+-- Table structure for attendance_image
+-- ----------------------------
+DROP TABLE IF EXISTS attendance_image;
+
+CREATE TABLE attendance_image
+(
+    attendance_id integer,
+    created_time timestamp with time zone,
+    attendance_img character varying(255)
+);
+
+-- ----------------------------
 -- Table structure for answers
 -- ----------------------------
 DROP TABLE IF EXISTS quiz_answers;
+
 CREATE TABLE quiz_answers (
   id serial NOT NULL,
   quiz_question_id int NOT NULL,
