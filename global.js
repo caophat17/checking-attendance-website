@@ -1,5 +1,7 @@
 var fs = require('fs');
 var nodemailer = require('nodemailer');
+
+
 module.exports = {
     db: {
         host: 'localhost',
@@ -7,28 +9,32 @@ module.exports = {
         password: '',
         database: 'qldd'
     },
-    // db_postgres: {
-    //     host: 'ec2-54-247-166-129.eu-west-1.compute.amazonaws.com',
-    //     user: 'jrfgjdydwutqqq',
-    //     password: '6596b2752d1eba4e8e6793b4aef3d7424b75ecc5354dcf299fb003ca80aff764',
-    //     port:'5432',
-    //     database: 'dfgju67jiv9q22'
-    // },
+    // ===== Database on Server
     db_postgres: {
-        host: 'localhost',
-        user: 'postgres',
-        password: '123',
-        port:'5432',
-        database: 'qldd'
+         host: 'ec2-107-22-211-182.compute-1.amazonaws.com',
+         user: 'enkpiewbafthms',
+         password: '55be265a531c3c374e3d94e6a00d10e63ede3af6cfafcf2254deba1d64c85fe0',
+         port:'5432',
+         database: 'd3qdiqvkhud343'
     },
-    host: 'qldd.herokuapp.com',
+    // ===== Database on Local
+    // db_postgres: {
+    //    host: 'localhost',
+    //    user: 'postgres',
+    //    password: 'postgres',
+    //    port:'5432',
+    //    database: 'itec-face81'
+    // },
+    host: 'https://iteccyle8.herokuapp.com',
+    largePersonGroup: 'hcmus-face',
+    faceApiKey: '18db52d47bc5483f92d687a957c40c98',
     email_setting: {
         host: 'smtp.office365.com', // Office 365 server
         port: 587, // secure SMTP
         secure: false, // false for TLS - as a boolean not string - but the default is false so just remove this completely
         auth: {
-            user: '1353019@student.hcmus.edu.vn',
-            pass: 'Nghia1507'
+            user: '1459028@itec.hcmus.edu.vn',
+            pass: 'thachcon1'
         },
         tls: {
             ciphers: 'SSLv3'
@@ -51,6 +57,7 @@ module.exports = {
         quiz: 3,
         face: 4,
     },
+    attendancePerWeek: 4,
     quiz_type:{
         academic: 0,
         miscellaneous: 1,
@@ -115,8 +122,8 @@ module.exports = {
                     let transporter = nodemailer.createTransport(settings.emails[i].config);
                     let mailOptions = {
                         from: from + ' <' + settings.emails[i].config.auth.user + '>',
-                        //to: to,
-                        to: '1353019@student.hcmus.edu.vn',
+                        // to: to,
+                        to: '1459028@itec.hcmus.edu.vn',
                         subject: subject,
                         text: text,
                     };
@@ -174,6 +181,10 @@ module.exports = {
         var i = name.lastIndexOf(' ');
         var last_name = name.substr(i + 1, name.length - 1);
         return last_name;
+    },
+
+    getEmailStudentApcs: function(stud_id){
+        return `${stud_id}@student.hcmus.edu.vn`
     },
 
     getProgramCodeFromClassName: function(class_name) {
