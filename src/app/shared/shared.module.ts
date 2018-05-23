@@ -114,7 +114,7 @@ export {NotificationService};
     QRCodeComponent,
     QuizDisplayComponent,
     TranslateModule
-  ],  
+  ],
   providers: [
     AppService,
     CourseService,
